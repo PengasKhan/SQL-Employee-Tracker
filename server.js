@@ -161,14 +161,130 @@ const menuPrompt = {
 };
 
 const viewEmployees = async () => {
-await fetch("/api/departments", {
-  method: "GET",
-})
+  await fetch("/api/departments", {
+    method: "GET",
+  });
   menu;
+};
+
+const viewRoles = async () => {
+  await fetch("/api/roles", {
+    method: "GET",
+  });
+  menu;
+};
+
+const viewDepartments = async () => {
+  await fetch("/api/departments", {
+    method: "GET",
+  });
+  menu;
+};
+
+const addEmployee = async () => {
+  const postEmployee = await inquirer
+    .prompt({
+      type: "input",
+      name: "firstName",
+      message: "Enter first name of new employee:",
+    })
+    .then(() => {
+      inquirer.prompt({
+        type: "input",
+        name: "lastName",
+        message: "Enter last name of new employee:",
+      });
+    })
+    .then(() => {
+      inquirer.prompt({
+        type: "input",
+        name: "employeeRole",
+        message: "Enter Role ID of new employee:",
+      });
+    })
+    .then(() => {
+      inquirer.prompt({
+        type: "input",
+        name: "employeeManager",
+        message: "Enter Manager ID of new employee:",
+      });
+    });
+
+  await fetch("/api/new-employee", {
+    method: "POST",
+  });
+  menu;
+};
+
+const addRole = async () => {
+  const postRole = await inquirer
+    .prompt({
+      type: "input",
+      name: "roleName",
+      message: "Enter title of new role:",
+    })
+    .then(() => {
+      inquirer.prompt({
+        type: "input",
+        name: "roleSalary",
+        message: "Enter salary of new role (in USD):",
+      });
+    })
+    .then(() => {
+      inquirer.prompt({
+        type: "input",
+        name: "roleDepartment",
+        message: "Enter Department ID of new role:",
+      });
+    });
+
+  await fetch("/api/new-role", {
+    method: "POST",
+  });
+  menu;
+};
+
+const addDepartment = async () => {
+  const postDepartment = await inquirer.prompt({
+    type: "input",
+    name: "departmentName",
+    message: "Enter name of new department:",
+  });
+
+  await fetch("/api/new-department", {
+    method: "POST",
+  });
+  menu;
+};
+
+const updateRole = async () => {
+  const putRole = await inquirer
+    .prompt({
+      type: "input",
+      name: "employeeID",
+      message: "Enter ID of employee to update:",
+    })
+    .then(() => {
+      inquirer.prompt({
+        type: "input",
+        name: "roleSalary",
+        message: "Enter new role ID for updated employee",
+      });
+    });
+
+  await fetch("/api/employee/:id", {
+    method: "PUT",
+  });
+  menu;
+};
+
+function logTable(data) {
+  const output = table(data);
+  console.log(output);
 }
 
 function start() {
-console.log(`
+  console.log(`
 _////////_//       _//_///////  _//          _////     _//      _//_////////_////////
 _//      _/ _//   _///_//    _//_//        _//    _//   _//    _// _//      _//      
 _//      _// _// _ _//_//    _//_//      _//        _//  _// _//   _//      _//      
@@ -186,19 +302,38 @@ _//   _//  _//       _//      _//     _//       _// _/      _/ _//       _// _//
 _/////    _//         _//     _//    _//         _//_//// _// _//         _//  _// //  _////////
                                                                                                 
 `);
-menu;
-};
+  menu;
+}
 
 const menu = async () => {
-    const menuAnswer = await inquirer.prompt(menuPrompt);
+  const menuAnswer = await inquirer.prompt(menuPrompt);
 
-    switch (menuAnswer.menu) {
-      case "View All Employees":
-        viewEmployees;
-        break;
-      case
-    }
-    }
+  switch (menuAnswer.menu) {
+    case "View All Employees":
+      viewEmployees;
+      break;
+    case "View All Roles":
+      viewRoles;
+      break;
+    case "View All Departments":
+      viewDepartments;
+      break;
+    case "Add Employee":
+      addEmployee;
+      break;
+    case "Add Role":
+      addRole;
+      break;
+    case "Add Department":
+      addDepartment;
+      break;
+    case "Update Employee Role":
+      updateRole;
+      break;
+    default:
+      console.log("Goodbye.");
+  }
+};
 
 // Default response for any other request (Not Found)
 app.use((req, res) => {
