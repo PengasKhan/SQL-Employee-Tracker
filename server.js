@@ -212,6 +212,13 @@ const addEmployee = async () => {
 
   await fetch("/api/new-employee", {
     method: "POST",
+    body: {
+      first_name: postEmployee.firstName,
+      last_name: postEmployee.lastName,
+      role_id: postEmployee.employeeRole,
+      manager_id: postEmployee.employeeManager,
+    },
+    headers: { "Content-Type": "application/json" },
   });
   menu;
 };
@@ -240,6 +247,12 @@ const addRole = async () => {
 
   await fetch("/api/new-role", {
     method: "POST",
+    body: {
+      title: postRole.roleName,
+      salary: postRole.roleSalary,
+      department_id: postRole.roleDepartment,
+    },
+    headers: { "Content-Type": "application/json" },
   });
   menu;
 };
@@ -253,6 +266,10 @@ const addDepartment = async () => {
 
   await fetch("/api/new-department", {
     method: "POST",
+    body: {
+      name: postDepartment.departmentName,
+    },
+    headers: { "Content-Type": "application/json" },
   });
   menu;
 };
@@ -267,13 +284,17 @@ const updateRole = async () => {
     .then(() => {
       inquirer.prompt({
         type: "input",
-        name: "roleSalary",
+        name: "roleID",
         message: "Enter new role ID for updated employee",
       });
     });
 
-  await fetch("/api/employee/:id", {
+  await fetch(`/api/employee/${putRole.employeeID}`, {
     method: "PUT",
+    body: {
+      role_id: putRole.roleID,
+    },
+    headers: { "Content-Type": "application/json" },
   });
   menu;
 };
