@@ -166,12 +166,9 @@ const menuPrompt = {
 const viewEmployees = async () => {
   db.query(
     `SELECT employee.id, employee.first_name AS "First Name", employee.last_name AS "Last Name", role.title AS "Job Title", department.name AS "Department", role.salary AS "Salary", CONCAT(managerTable.first_name, ' ', managerTable.last_name) AS "Manager" FROM employee
-
-LEFT JOIN role ON employee.role_id = role.id
-
-LEFT JOIN department ON role.department_id = department.id
-
-LEFT JOIN employee managerTable ON employee.manager_id = managerTable.id`,
+    LEFT JOIN role ON employee.role_id = role.id
+    LEFT JOIN department ON role.department_id = department.id
+    LEFT JOIN employee managerTable ON employee.manager_id = managerTable.id`,
     (err, data) => {
       printTable(data);
       menu();
@@ -182,7 +179,7 @@ LEFT JOIN employee managerTable ON employee.manager_id = managerTable.id`,
 const viewRoles = async () => {
   db.query(
     `SELECT role.id AS "id", role.title AS "Job Title", department.name AS Department, salary FROM role
-    LEFT JOIN department ON role.department_id = department.id;`,
+    LEFT JOIN department ON role.department_id = department.id`,
     (err, data) => {
       printTable(data);
       menu();
@@ -191,10 +188,13 @@ const viewRoles = async () => {
 };
 
 const viewDepartments = async () => {
-  await fetch("/api/departments", {
-    method: "GET",
-  });
-  menu;
+  db.query(
+    "SELECT department.name AS department, department.id FROM department",
+    (err, data) => {
+      printTable(data);
+      menu();
+    }
+  );
 };
 
 const addEmployee = async () => {
@@ -220,6 +220,7 @@ const addEmployee = async () => {
       message: "Enter Manager ID of new employee:",
     },
   ]);
+
   db.query(
     "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
     [
@@ -235,37 +236,31 @@ const addEmployee = async () => {
 };
 
 const addRole = async () => {
-  const postRole = await inquirer
-    .prompt({
+  const postRole = await inquirer.prompt([
+    {
       type: "input",
       name: "roleName",
       message: "Enter title of new role:",
-    })
-    .then(() => {
-      inquirer.prompt({
-        type: "input",
-        name: "roleSalary",
-        message: "Enter salary of new role (in USD):",
-      });
-    })
-    .then(() => {
-      inquirer.prompt({
-        type: "input",
-        name: "roleDepartment",
-        message: "Enter Department ID of new role:",
-      });
-    });
-
-  await fetch("/api/new-role", {
-    method: "POST",
-    body: {
-      title: postRole.roleName,
-      salary: postRole.roleSalary,
-      department_id: postRole.roleDepartment,
     },
-    headers: { "Content-Type": "application/json" },
-  });
-  menu;
+    {
+      type: "input",
+      name: "roleSalary",
+      message: "Enter salary of new role (in USD):",
+    },
+    {
+      type: "input",
+      name: "roleDepartment",
+      message: "Enter Department ID of new role:",
+    },
+  ]);
+
+  db.query(
+    "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
+    [postRole.roleName, postRole.roleSalary, postRole.roleDepartment],
+    (err) => {
+      viewRoles();
+    }
+  );
 };
 
 const addDepartment = async () => {
@@ -275,39 +270,36 @@ const addDepartment = async () => {
     message: "Enter name of new department:",
   });
 
-  await fetch("/api/new-department", {
-    method: "POST",
-    body: {
-      name: postDepartment.departmentName,
-    },
-    headers: { "Content-Type": "application/json" },
-  });
-  menu;
+  db.query(
+    "INSERT INTO department (name) VALUES (?)",
+    [postDepartment.departmentName],
+    (err) => {
+      viewDepartments();
+    }
+  );
 };
 
 const updateRole = async () => {
-  const putRole = await inquirer
-    .prompt({
+  const putRole = await inquirer.prompt([
+    {
       type: "input",
       name: "employeeID",
       message: "Enter ID of employee to update:",
-    })
-    .then(() => {
-      inquirer.prompt({
-        type: "input",
-        name: "roleID",
-        message: "Enter new role ID for updated employee",
-      });
-    });
-
-  await fetch(`/api/employee/${putRole.employeeID}`, {
-    method: "PUT",
-    body: {
-      role_id: putRole.roleID,
     },
-    headers: { "Content-Type": "application/json" },
-  });
-  menu;
+    {
+      type: "input",
+      name: "roleID",
+      message: "Enter new role ID for updated employee",
+    },
+  ]);
+
+  db.query(
+    "UPDATE employee SET role_id = ? WHERE employee.id = ?",
+    [putRole.roleID, putRole.employeeID],
+    (err) => {
+      viewEmployees();
+    }
+  );
 };
 
 function logTable(data) {
