@@ -7,11 +7,11 @@ VALUES ("Accounting"),
        ("IT");
 
 INSERT INTO role (department_id, title, salary)
-VALUES (1, "Accountant", 12),
-       (2, "Loser", 10),
-       (3, "Boss Person", 20),
-       (4, "Computer Person", 12),
-       (3, "Wrangler", 18);
+VALUES (1, "Accountant", 50000),
+       (2, "Loser", 40000),
+       (3, "Boss Person", 100000),
+       (4, "Computer Person", 50000),
+       (3, "Wrangler", 80000);
        
 INSERT INTO employee (role_id, last_name, first_name)
 VALUES (3, "Dandleton", "Karl"),
