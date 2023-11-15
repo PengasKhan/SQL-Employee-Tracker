@@ -1,5 +1,5 @@
 {
-  "name": "SQL Employee Tracker",
+  "name": "sqlemployeetracker",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "console-table-printer": "^2.11.2",
     "express": "^4.17.1",
     "inquirer": "^8.2.4",
     "jshint": "^2.12.0",

@@ -1,6 +1,7 @@
 const express = require("express");
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
+const { printTable } = require("console-table-printer");
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -24,7 +25,7 @@ const db = mysql.createConnection(
 
 // View all Departments
 app.get("/api/departments", (req, res) => {
-  const sql = `SELECT name AS department, id FROM department`;
+  const sql = `SELECT department.name AS department, department.id FROM department`;
 
   db.query(sql, (err, rows) => {
     if (err) {
@@ -61,6 +62,8 @@ app.get("/api/employees", (req, res) => {
       res.status(500).json({ error: err.message });
       return;
     }
+    const tableData = rows.map((row) => Object.values(row));
+    logTable(tableData);
     res.json({
       data: rows,
     });
@@ -161,17 +164,30 @@ const menuPrompt = {
 };
 
 const viewEmployees = async () => {
-  await fetch("/api/departments", {
-    method: "GET",
-  });
-  menu;
+  db.query(
+    `SELECT employee.id, employee.first_name AS "First Name", employee.last_name AS "Last Name", role.title AS "Job Title", department.name AS "Department", role.salary AS "Salary", CONCAT(managerTable.first_name, ' ', managerTable.last_name) AS "Manager" FROM employee
+
+LEFT JOIN role ON employee.role_id = role.id
+
+LEFT JOIN department ON role.department_id = department.id
+
+LEFT JOIN employee managerTable ON employee.manager_id = managerTable.id`,
+    (err, data) => {
+      printTable(data);
+      menu();
+    }
+  );
 };
 
 const viewRoles = async () => {
-  await fetch("/api/roles", {
-    method: "GET",
-  });
-  menu;
+  db.query(
+    `SELECT role.id AS "id", role.title AS "Job Title", department.name AS Department, salary FROM role
+    LEFT JOIN department ON role.department_id = department.id;`,
+    (err, data) => {
+      printTable(data);
+      menu();
+    }
+  );
 };
 
 const viewDepartments = async () => {
@@ -182,45 +198,40 @@ const viewDepartments = async () => {
 };
 
 const addEmployee = async () => {
-  const postEmployee = await inquirer
-    .prompt({
+  const postEmployee = await inquirer.prompt([
+    {
       type: "input",
       name: "firstName",
       message: "Enter first name of new employee:",
-    })
-    .then(() => {
-      inquirer.prompt({
-        type: "input",
-        name: "lastName",
-        message: "Enter last name of new employee:",
-      });
-    })
-    .then(() => {
-      inquirer.prompt({
-        type: "input",
-        name: "employeeRole",
-        message: "Enter Role ID of new employee:",
-      });
-    })
-    .then(() => {
-      inquirer.prompt({
-        type: "input",
-        name: "employeeManager",
-        message: "Enter Manager ID of new employee:",
-      });
-    });
-
-  await fetch("/api/new-employee", {
-    method: "POST",
-    body: {
-      first_name: postEmployee.firstName,
-      last_name: postEmployee.lastName,
-      role_id: postEmployee.employeeRole,
-      manager_id: postEmployee.employeeManager,
     },
-    headers: { "Content-Type": "application/json" },
-  });
-  menu;
+    {
+      type: "input",
+      name: "lastName",
+      message: "Enter last name of new employee:",
+    },
+    {
+      type: "input",
+      name: "employeeRole",
+      message: "Enter Role ID of new employee:",
+    },
+    {
+      type: "input",
+      name: "employeeManager",
+      message: "Enter Manager ID of new employee:",
+    },
+  ]);
+  db.query(
+    "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
+    [
+      postEmployee.firstName,
+      postEmployee.lastName,
+      postEmployee.employeeRole,
+      postEmployee.employeeManager,
+    ],
+    (err) => {
+      viewEmployees();
+    }
+  );
 };
 
 const addRole = async () => {
@@ -323,7 +334,7 @@ _//   _//  _//       _//      _//     _//       _// _/      _/ _//       _// _//
 _/////    _//         _//     _//    _//         _//_//// _// _//         _//  _// //  _////////
                                                                                                 
 `);
-  menu;
+  menu();
 }
 
 const menu = async () => {
@@ -331,38 +342,30 @@ const menu = async () => {
 
   switch (menuAnswer.menu) {
     case "View All Employees":
-      viewEmployees;
+      viewEmployees();
       break;
     case "View All Roles":
-      viewRoles;
+      viewRoles();
       break;
     case "View All Departments":
-      viewDepartments;
+      viewDepartments();
       break;
     case "Add Employee":
-      addEmployee;
+      addEmployee();
       break;
     case "Add Role":
-      addRole;
+      addRole();
       break;
     case "Add Department":
-      addDepartment;
+      addDepartment();
       break;
     case "Update Employee Role":
-      updateRole;
+      updateRole();
       break;
     default:
       console.log("Goodbye.");
+      process.exit(0);
   }
 };
-
-// Default response for any other request (Not Found)
-app.use((req, res) => {
-  res.status(404).end();
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
 
 start();
