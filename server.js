@@ -53,7 +53,7 @@ app.get("/api/roles", (req, res) => {
 });
 
 // View all Employees
-app.get("/api/departments", (req, res) => {
+app.get("/api/employees", (req, res) => {
   const sql = `SELECT id, first_name AS "First Name", last_name AS "Last Name", role.title AS "Job Title", role.department.name AS "Department", role.salary AS "Salary", employee.last_name AS "Manager" FROM employee`;
 
   db.query(sql, (err, rows) => {
@@ -102,7 +102,7 @@ app.post("/api/new-role", ({ body }, res) => {
 });
 
 // Add an employee
-app.post("/api/new-movie", ({ body }, res) => {
+app.post("/api/new-employee", ({ body }, res) => {
   const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
       VALUES (?)`;
   const params = [
@@ -144,6 +144,62 @@ app.put("/api/employee/:id", (req, res) => {
   });
 });
 
+const menuPrompt = {
+  type: "list",
+  name: "menu",
+  message: "What do you want to do?",
+  choices: [
+    "View All Employees",
+    "Add Employee",
+    "Update Employee Role",
+    "View All Roles",
+    "Add Role",
+    "View All Departments",
+    "Add Department",
+    "Quit",
+  ],
+};
+
+const viewEmployees = async () => {
+await fetch("/api/departments", {
+  method: "GET",
+})
+  menu;
+}
+
+function start() {
+console.log(`
+_////////_//       _//_///////  _//          _////     _//      _//_////////_////////
+_//      _/ _//   _///_//    _//_//        _//    _//   _//    _// _//      _//      
+_//      _// _// _ _//_//    _//_//      _//        _//  _// _//   _//      _//      
+_//////  _//  _//  _//_///////  _//      _//        _//    _//     _//////  _//////  
+_//      _//   _/  _//_//       _//      _//        _//    _//     _//      _//      
+_//      _//       _//_//       _//        _//     _//     _//     _//      _//      
+_////////_//       _//_//       _////////    _////         _//     _////////_////////
+                                                                                     
+_/////          _/       _/// _//////      _/       _// _//         _/         _// //  _////////
+_//   _//      _/ //          _//         _/ //     _/    _//      _/ //     _//    _//_//      
+_//    _//    _/  _//         _//        _/  _//    _/     _//    _/  _//     _//      _//      
+_//    _//   _//   _//        _//       _//   _//   _/// _/      _//   _//      _//    _//////  
+_//    _//  _////// _//       _//      _////// _//  _/     _//  _////// _//        _// _//      
+_//   _//  _//       _//      _//     _//       _// _/      _/ _//       _// _//    _//_//      
+_/////    _//         _//     _//    _//         _//_//// _// _//         _//  _// //  _////////
+                                                                                                
+`);
+menu;
+};
+
+const menu = async () => {
+    const menuAnswer = await inquirer.prompt(menuPrompt);
+
+    switch (menuAnswer.menu) {
+      case "View All Employees":
+        viewEmployees;
+        break;
+      case
+    }
+    }
+
 // Default response for any other request (Not Found)
 app.use((req, res) => {
   res.status(404).end();
@@ -153,34 +209,4 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-inquirer
-  .prompt([
-    {
-      type: "list",
-      name: "theme",
-      message: "What do you want to do?",
-      choices: [
-        "Order a pizza",
-        "Make a reservation",
-        new inquirer.Separator(),
-        "Ask for opening hours",
-        {
-          name: "Contact support",
-          disabled: "Unavailable at this time",
-        },
-        "Talk to the receptionist",
-      ],
-    },
-    {
-      type: "list",
-      name: "size",
-      message: "What size do you need?",
-      choices: ["Jumbo", "Large", "Standard", "Medium", "Small", "Micro"],
-      filter(val) {
-        return val.toLowerCase();
-      },
-    },
-  ])
-  .then((answers) => {
-    console.log(JSON.stringify(answers, null, "  "));
-  });
+start();
